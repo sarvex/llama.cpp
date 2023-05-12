@@ -26,21 +26,19 @@ HF_SUBLAYER_TO_GGML = {
 
 
 def translate_tensor_name(t: str) -> str:
-    match = re.match(r".*layers\.(\d+)\.(\w+\.\w+)\.lora_(A|B)\.weight", t)
-    if match:
-        nn = match.group(1)
-        sub_layer = match.group(2)
-        lora_type = match.group(3)
+    if match := re.match(
+        r".*layers\.(\d+)\.(\w+\.\w+)\.lora_(A|B)\.weight", t
+    ):
+        nn = match[1]
+        sub_layer = match[2]
+        lora_type = match[3]
 
         sub_layer_renamed = HF_SUBLAYER_TO_GGML.get(sub_layer)
         if sub_layer_renamed is None:
             print(f"Error: unrecognized sub-layer {sub_layer} in tensor {t}")
             sys.exit(1)
 
-        output_string = (
-            f"layers.{nn}.{HF_SUBLAYER_TO_GGML[sub_layer]}.weight.lora{lora_type}"
-        )
-        return output_string
+        return f"layers.{nn}.{HF_SUBLAYER_TO_GGML[sub_layer]}.weight.lora{lora_type}"
     else:
         print(f"Error: unrecognized tensor {t}")
         sys.exit(1)
@@ -114,7 +112,7 @@ with open(output_path, "wb") as fout:
     write_file_header(fout, params)
     for k, v in model.items():
         if k.endswith("lora_A.weight"):
-            if v.dtype != torch.float16 and v.dtype != torch.float32:
+            if v.dtype not in [torch.float16, torch.float32]:
                 v = v.float()
             v = v.T
         else:
