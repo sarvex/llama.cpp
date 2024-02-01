@@ -280,7 +280,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v1
 
-      - uses: Jimver/cuda-toolkit@v0.2.10
+      - uses: Jimver/cuda-toolkit@v0.2.14
         id: cuda-toolkit
         with:
           cuda: ${{ matrix.cuda }}
